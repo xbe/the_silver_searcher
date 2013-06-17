@@ -31,6 +31,7 @@ _ag() {
     --files-with-matches
     --files-without-matches
     --follow
+    --fuzzy
     --group
     --nogroup
     --heading
@@ -66,11 +67,11 @@ _ag() {
   '
   shtopt='
     -a -A -B -C -D
-    -f -g -G -h -i
-    -l -L -m -n -p
-    -Q -r -R -s -S
-    -t -u -U -v -V
-    -w -z
+    -f -F -g -G -h
+    -i -l -L -m -n
+    -p -Q -r -R -s
+    -S -t -u -U -v
+    -V -w -z
   '
 
   # these options require an argument

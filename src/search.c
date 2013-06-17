@@ -42,6 +42,41 @@ void search_buf(const char *buf, const int buf_len,
         matches[0].start = 0;
         matches[0].end = buf_len;
         matches_len = 1;
+    } else if (opts.fuzzy_errors) {
+        regamatch_t fuzzy_match;
+        regmatch_t pmatch;
+        fuzzy_match.nmatch = 1;
+        fuzzy_match.pmatch = &pmatch;
+        int rc;
+        /* right now regoff_t is an int but let's be safe and make our buffer offset a regoff_t */
+        regoff_t buf_regoff = 0;
+        while (buf_regoff < buf_len &&
+              (rc = tre_reganexec(&opts.fuzzy_regexp, buf + buf_regoff, buf_len - buf_regoff, &fuzzy_match, opts.fuzzy_params, 0)) == REG_OK) {
+            log_debug("Fuzzy match found. File %s, offset %i bytes.", dir_full_path, fuzzy_match.pmatch->rm_so);
+            /* buf_regoff = fuzzy_match.pmatch->rm_eo; */
+
+            /* TODO: copy-pasted from below. FIXME */
+            if ((size_t)matches_len + matches_spare >= matches_size) {
+                matches_size = matches ? matches_size * 2 : 100;
+                log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
+                matches = ag_realloc(matches, matches_size * sizeof(match));
+            }
+
+            matches[matches_len].start = buf_regoff + fuzzy_match.pmatch->rm_so;
+            matches[matches_len].end = buf_regoff + fuzzy_match.pmatch->rm_eo;
+            buf_regoff += fuzzy_match.pmatch->rm_eo;
+
+            matches_len++;
+            /*printf("%s %d\n", dir_full_path, buf_regoff); */
+
+            if (matches_len >= opts.max_matches_per_file) {
+                log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
+                break;
+            }
+        }
+        if (rc == REG_ESPACE) {
+            die("Ran out of memory doing fuzzy matching in file: %s", dir_full_path);
+        }
     } else if (opts.literal) {
         const char *match_ptr = buf;
         strncmp_fp ag_strnstr_fp = get_strstr(opts.casing);

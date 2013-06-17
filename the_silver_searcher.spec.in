@@ -12,8 +12,8 @@ URL:		https://github.com/ggreer/%{name}
 Source0:	https://github.com/downloads/ggreer/%{name}/%{name}-%{version}.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
-BuildRequires:	pcre-devel, xz-devel, zlib-devel
-Requires:	pcre, xz, zlib
+BuildRequires:	pcre-devel, xz-devel, zlib-devel, tre-devel
+Requires:	pcre, xz, zlib, tre
 
 %description
 The Silver Searcher

@@ -16,6 +16,7 @@ m4_ifdef(
     [AM_SILENT_RULES([yes])])
 
 PKG_CHECK_MODULES([PCRE], [libpcre])
+PKG_CHECK_MODULES([TRE], [tre])
 
 # Run CFLAGS="-g" ./configure if you want debug symbols
 CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE -O2"

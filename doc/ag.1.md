@@ -39,6 +39,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Search up to NUM directories deep. Default is 25.
   * `-f --follow`:
     Follow symlinks.
+  * `-F --fuzzy [ERRORS]`:
+    Use fuzzy matching. Match pattern within a given number of errors.
   * `--[no]group`
   * `-g PATTERN`:
     Print filenames matching PATTERN.

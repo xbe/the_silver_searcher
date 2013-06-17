@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 #else
     workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
 #endif
-    if (opts.literal)
+    if (opts.literal && !opts.fuzzy_errors)
         workers_len--;
     if (opts.workers)
         workers_len = opts.workers;
@@ -79,7 +79,23 @@ int main(int argc, char **argv) {
     if (opts.casing == CASE_SMART)
         opts.casing = is_lowercase(opts.query) ? CASE_INSENSITIVE : CASE_SENSITIVE;
 
-    if (opts.literal) {
+    if (opts.fuzzy_errors) {
+        log_debug("Using fuzzy matching (TRE library)");
+        /* Use POSIX Extended Regular Expression (ERE) instead of POSIX Basic Regular Expression (BRE). */
+        int cflags = REG_EXTENDED;
+        if (opts.casing == CASE_INSENSITIVE)
+            cflags |= REG_ICASE;
+        if (opts.literal)
+            cflags |= REG_LITERAL;
+        int regcomp_err = tre_regcomp(&opts.fuzzy_regexp, opts.query, cflags);
+        if (regcomp_err != 0) {
+                char err_buff[256];
+                tre_regerror(regcomp_err, &opts.fuzzy_regexp, err_buff, 256);
+                die("error in tre_regcomp: %s", err_buff);
+        }
+        tre_regaparams_default(&opts.fuzzy_params);
+        opts.fuzzy_params.max_err = opts.fuzzy_errors;
+    } else if (opts.literal) {
         if (opts.casing == CASE_INSENSITIVE) {
             /* Search routine needs the query to be lowercase */
             char *c = opts.query;

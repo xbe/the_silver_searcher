@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 
 #include <pcre.h>
+#include <tre/tre.h>
 
 #define DEFAULT_CONTEXT_LEN 2
 
@@ -33,6 +34,9 @@ typedef struct {
     int column;
     int context;
     int follow_symlinks;
+    int fuzzy_errors;
+    regaparams_t fuzzy_params;
+    regex_t fuzzy_regexp;
     int invert_match;
     int literal;
     int literal_starts_wordchar;

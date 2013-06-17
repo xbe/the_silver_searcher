@@ -59,6 +59,8 @@ Search Options:\n\
   -D --debug              Ridiculous debugging (probably not useful)\n\
      --depth NUM          Search up to NUM directories deep (Default: 25)\n\
   -f --follow             Follow symlinks\n\
+  -F --fuzzy [ERRORS]     Use fuzzy matching. Match pattern within a given number\n\
+                          of errors.\n\
   -G --file-search-regex  PATTERN Limit search to filenames matching PATTERN\n\
      --hidden             Search hidden files (obeys .*ignore files)\n\
   -i --ignore-case        Match case insensitively\n\
@@ -135,6 +137,10 @@ void cleanup_options(void) {
     if (opts.file_search_regex_extra) {
         pcre_free(opts.file_search_regex_extra);
     }
+
+    if (opts.fuzzy_errors) {
+        tre_regfree(&opts.fuzzy_regexp);
+    }
 }
 
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
@@ -179,6 +185,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "files-with-matches", no_argument, NULL, 'l' },
         { "files-without-matches", no_argument, NULL, 'L' },
         { "follow", no_argument, &opts.follow_symlinks, 1 },
+        { "fuzzy", required_argument, NULL, 'F' },
         { "group", no_argument, &group, 1 },
         { "heading", no_argument, &opts.print_heading, 1 },
         { "help", no_argument, NULL, 'h' },
@@ -258,7 +265,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.stdout_inode = statbuf.st_ino;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fF:hiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -287,6 +294,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'f':
                 opts.follow_symlinks = 1;
+                break;
+            case 'F':
+                opts.fuzzy_errors = atoi(optarg);
                 break;
             case 'g':
                 needs_query = 0;
